@@ -12,6 +12,7 @@ import itertools
 import pymongo
 from pymongo import MongoClient
 from datetime import datetime, date, timedelta
+from datetime import time as dtime
 import praw
 import pylint
 from os import environ
@@ -32,7 +33,7 @@ reddit = praw.Reddit(
    client_id=CLIENT_ID,
    client_secret=CLIENT_SECRET,
    user_agent=USER_AGENT)
-dt = datetime.combine(date.today(), time(0, 0, 0))
+dt = datetime.combine(date.today(), dtime(0, 0, 0))
 # start of yesterday
 start_at = int((dt - timedelta(days=1)).timestamp())
 # end of yesterday
