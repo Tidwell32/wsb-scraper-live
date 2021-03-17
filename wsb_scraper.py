@@ -34,7 +34,7 @@ todays_date = moment.now().format("YYYY-MM-DD")
 todays_data = collection.find_one({"date": todays_date})
 now = round(time.time())
 ten_minutes_ago = now - 600
-five_minutes_ago = now - 300
+twenty_minutes_ago = now - 1200
 
 def extract_ticker(body, start_index):
    # Given a starting index and text, this will extract the ticker, return None if it is incorrectly formatted.
@@ -6729,7 +6729,7 @@ def run():
 
    for count, post in enumerate(new_posts):
       try:
-         if post.score > 0 and post.created_utc <= five_minutes_ago and post.created_utc >= ten_minutes_ago:
+         if post.score > 0 and post.created_utc <= ten_minutes_ago and post.created_utc >= twenty_minutes_ago:
             ticker_dict = parse_section(ticker_dict, post.title)
       # on a very rare occasion, a post or comment disappears into the ether and causes an error
       except:
@@ -6739,15 +6739,15 @@ def run():
       try:
          if isinstance(comment, MoreComments):
             continue
-         if comment.score > 0 and comment.created_utc <= five_minutes_ago and comment.created_utc >= ten_minutes_ago:
+         if comment.score > 0 and comment.created_utc <= ten_minutes_ago and comment.created_utc >= twenty_minutes_ago:
             ticker_dict = parse_section(ticker_dict, comment.body)
-         if comment.score > 0 and comment.created_utc <= five_minutes_ago:   
+         if comment.score > 0 and comment.created_utc <= ten_minutes_ago:   
             comment.refresh()
             replies = comment.replies
             for rep in replies:
                if isinstance(rep, MoreComments):
                   continue
-               if rep.score > 0 and rep.created_utc <= five_minutes_ago and rep.created_utc >= ten_minutes_ago:
+               if rep.score > 0 and rep.created_utc <= ten_minutes_ago and rep.created_utc >= twenty_minutes_ago:
                   ticker_dict = parse_section(ticker_dict, rep.body)
       except:
          continue    
