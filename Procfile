@@ -1,0 +1,1 @@
+worker: python wsb_scraper.py
