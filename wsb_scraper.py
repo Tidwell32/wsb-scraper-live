@@ -5016,7 +5016,6 @@ def parse_section(ticker_dict, body):
     "RDVT",
     "RDWR",
     "RDY",
-    "RE",
     "REDFY",
     "REDU",
     "REED",
