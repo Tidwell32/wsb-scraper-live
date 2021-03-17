@@ -6776,6 +6776,9 @@ def run():
    for ticker in ticker_list:
       Ticker.analyze_sentiment(ticker)
 
+   for count, ticker in enumerate(ticker_list):
+      data_for_db.append({"ticker": ticker.ticker, "mentions": [ticker.count, ticker.bullish, ticker.neutral, ticker.bearish]})
+
    collection.update_one({"date": yesterdays_date}, {"$set": {'tickers': list(data_for_db), 'last_pull': round(time.time())}})
 
 class Ticker:
