@@ -20,6 +20,12 @@ from praw.models import MoreComments
 from collections import defaultdict
 from vaderSentiment.vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
+dt = datetime.combine(date.today(), dtime(0, 0, 0))
+yesterday_unix = int((dt - timedelta(hours=12)).timestamp())
+start_at = int((dt - timedelta(days=1)).timestamp())
+end_at = int((dt - timedelta(seconds=1)).timestamp())
+yesterdays_date = moment.unix(yesterday_unix).format('YYYY-MM-DD')
+
 MONGO_DB = environ['MONGO_DB']
 CLIENT_ID = environ['CLIENT_ID']
 CLIENT_SECRET = environ['CLIENT_SECRET']
@@ -33,12 +39,9 @@ reddit = praw.Reddit(
    client_id=CLIENT_ID,
    client_secret=CLIENT_SECRET,
    user_agent=USER_AGENT)
-dt = datetime.combine(date.today(), dtime(0, 0, 0))
+
 # start of yesterday
-start_at = int((dt - timedelta(days=1)).timestamp())
-# end of yesterday
-end_at = int((dt - timedelta(seconds=1)).timestamp())
-yesterdays_date = moment.now().subtract(12, 'hours').format('YYYY-MM-DD')
+
 
 def extract_ticker(body, start_index):
    """
