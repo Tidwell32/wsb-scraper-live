@@ -38,7 +38,7 @@ dt = datetime.combine(date.today(), time(0, 0, 0))
 start_at = int((dt - timedelta(days=1)).timestamp())
 # end of yesterday
 end_at = int((dt - timedelta(seconds=1)).timestamp())
-yesterdays_date = moment().subtract(12, 'hours').format('YYYY-MM-DD')
+yesterdays_date = moment.now().subtract(12, 'hours').format('YYYY-MM-DD')
 
 def extract_ticker(body, start_index):
    """
