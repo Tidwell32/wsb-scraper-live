@@ -38,7 +38,7 @@ twenty_minutes_ago = now - 1200
 
 def extract_ticker(body, start_index):
    # Given a starting index and text, this will extract the ticker, return None if it is incorrectly formatted.
-   count  = 0
+   count = 0
    ticker = ""
 
    for char in body[start_index:]:

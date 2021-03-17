@@ -9,10 +9,9 @@ import math
 import json
 import requests
 import itertools
-import numpy as np
 import pymongo
 from pymongo import MongoClient
-from datetime import datetime, date, time, timedelta
+from datetime import datetime, date, timedelta
 import praw
 import pylint
 from os import environ
@@ -44,7 +43,7 @@ def extract_ticker(body, start_index):
    """
    Given a starting index and text, this will extract the ticker, return None if it is incorrectly formatted.
    """
-   count  = 0
+   count = 0
    ticker = ""
 
    for char in body[start_index:]:
