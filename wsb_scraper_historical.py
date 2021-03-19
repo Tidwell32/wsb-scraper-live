@@ -21,10 +21,11 @@ from collections import defaultdict
 from vaderSentiment.vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 dt = datetime.combine(date.today(), dtime(0, 0, 0))
-yesterday_unix = int((dt - timedelta(hours=12)).timestamp())
-start_at = int((dt - timedelta(days=1)).timestamp())
-end_at = int((dt - timedelta(seconds=1)).timestamp())
-yesterdays_date = moment.unix(yesterday_unix).format('YYYY-MM-DD')
+
+start_at = int((dt - timedelta(days=3)).timestamp())
+three_days_ago_unix = int((dt - timedelta(hours=60)).timestamp())
+end_at = start_at + 86400
+three_days_ago_date = moment.unix(three_days_ago_unix).format('YYYY-MM-DD')
 
 MONGO_DB = environ['MONGO_DB']
 CLIENT_ID = environ['CLIENT_ID']
@@ -34,6 +35,8 @@ USER_AGENT = environ['USER_AGENT']
 cluster = MongoClient(MONGO_DB)
 db = cluster["wsb_momentum"]
 collection = db["daily_mentions"]
+three_days_ago_data = collection.find_one({"date": three_days_ago_date})
+collection.insert_one({"date": three_days_ago_date + "-LIVEDATA", 'tickers': list(three_days_ago_data["tickers"]), 'last_pull': round(time.time()) })
 subreddit = 'wallstreetbets'
 reddit = praw.Reddit(
    client_id=CLIENT_ID,
@@ -1964,7 +1967,6 @@ def parse_section(ticker_dict, body):
     "EGBN",
     "EGHT",
     "EGLE",
-    "EGO",
     "EGOV",
     "EGP",
     "EGRX",
@@ -2331,7 +2333,6 @@ def parse_section(ticker_dict, body):
     "FNWB",
     "FOCS",
     "FOE",
-    "FOLD",
     "FONR",
     "FORA",
     "FORD",
@@ -3469,7 +3470,6 @@ def parse_section(ticker_dict, body):
     "LASR",
     "LATN",
     "LAUR",
-    "LAWS",
     "LAZ",
     "LAZR",
     "LB",
@@ -4734,7 +4734,6 @@ def parse_section(ticker_dict, body):
     "PPG",
     "PPGH",
     "PPIH",
-    "PPL",
     "PPSI",
     "PQG",
     "PRA",
@@ -5455,7 +5454,6 @@ def parse_section(ticker_dict, body):
     "SNY",
     "SOAC",
     "SOFO",
-    "SOFT",
     "SOGO",
     "SOHO",
     "SOHU",
@@ -5571,7 +5569,6 @@ def parse_section(ticker_dict, body):
     "STAA",
     "STAF",
     "STAG",
-    "STAR",
     "STBA",
     "STC",
     "STCN",
@@ -5646,7 +5643,6 @@ def parse_section(ticker_dict, body):
     "SVRA",
     "SVT",
     "SVVC",
-    "SWAG",
     "SWAV",
     "SWBI",
     "SWBK",
@@ -5881,7 +5877,6 @@ def parse_section(ticker_dict, body):
     "TOL",
     "TOMZ",
     "TONY",
-    "TOPS",
     "TORC",
     "TORM",
     "TOT",
@@ -6737,7 +6732,7 @@ def run():
    for count, ticker in enumerate(ticker_list):
       data_for_db.append({"ticker": ticker.ticker, "mentions": [ticker.count, ticker.bullish, ticker.neutral, ticker.bearish]})
 
-   collection.update_one({"date": yesterdays_date}, {"$set": {'tickers': list(data_for_db), 'last_pull': round(time.time())}})
+   collection.update_one({"date": three_days_ago_date}, {"$set": {'tickers': list(data_for_db), 'last_pull': round(time.time())}})
 
 class Ticker:
    def __init__(self, ticker):
