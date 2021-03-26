@@ -6608,7 +6608,7 @@ def run():
             new_obj[ticker] = [item["mentions"][0], item["mentions"][1], item["mentions"][2], item["mentions"][3]]
       for item in new_obj:
          data_for_mongo.append({"ticker": item, "mentions": new_obj[item]})
-      collection.update_one({"date": todays_date}, {"$set": {'tickers': list(data_for_mongo), 'last_pull': round(time.time())}, "comments_scraped": comments_scraped}, True)
+      collection.update_one({"date": todays_date}, {"$set": {'tickers': list(data_for_mongo), 'last_pull': round(time.time()), "comments_scraped": comments_scraped}}, True)
    
    # first scrape of the day
    else:
