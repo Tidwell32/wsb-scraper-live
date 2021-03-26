@@ -6604,14 +6604,13 @@ def run():
    first_post = comments_from_reddit[0]['created_utc']
    last_post = comments_from_reddit[-1]['created_utc']
 
-   for comment in new_comments:
+   for count, comment in enumerate(new_comments):
       
       try:
          ticker_dict = parse_section(ticker_dict, comment['body'])
-               # update the progress count
-         number_of_comments =+ 1
       except:
          continue
+   number_of_comments = count
 
    total_mentions = 0
    ticker_list = []
