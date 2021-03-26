@@ -467,7 +467,6 @@ def parse_section(ticker_dict, body):
       "APGB",
       "APH",
       "APHA",
-      "API",
       "APLE",
       "APLS",
       "APLT",
