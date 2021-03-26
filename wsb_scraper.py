@@ -393,7 +393,6 @@ def parse_section(ticker_dict, body):
       "AMNB",
       "AMOT",
       "AMOV",
-      "AMP",
       "AMPE",
       "AMPG",
       "AMPH",
