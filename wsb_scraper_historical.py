@@ -3817,7 +3817,6 @@ def parse_section(ticker_dict, body):
       "MLCO",
       "MLHR",
       "MLI",
-      "MLM",
       "MLND",
       "MLNX",
       "MLP",
@@ -6585,7 +6584,6 @@ def pull_comments_for(subreddit, start_at, end_at):
    while n == SIZE:
       last = comments_collections[-1]
       new_start_at = last['created_utc'] + (1)
-      print('new start ', new_start_at, last['id'])
       more_comments = map_comments( \
          make_request( \
                URI_TEMPLATE.format( \
@@ -6598,6 +6596,7 @@ def pull_comments_for(subreddit, start_at, end_at):
 
 comments = pull_comments_for(subreddit, start_at, end_at)
 comments_from_reddit = comments
+number_of_comments = 0
 def run():
    data_for_db = []
    ticker_dict = {}
@@ -6605,16 +6604,13 @@ def run():
    first_post = comments_from_reddit[0]['created_utc']
    last_post = comments_from_reddit[-1]['created_utc']
 
-   for count, comment in enumerate(new_comments):
+   for comment in new_comments:
       
       try:
-         print(comment['id'])
          ticker_dict = parse_section(ticker_dict, comment['body'])
                # update the progress count
-         sys.stdout.write("\rProgress: {0} comments".format(count + 1))
-         sys.stdout.flush()
+         number_of_comments =+ 1
       except:
-         print('something failed')
          continue
 
    total_mentions = 0
@@ -6628,12 +6624,10 @@ def run():
    for ticker in ticker_list:
       Ticker.analyze_sentiment(ticker)
 
-   for count, ticker in enumerate(ticker_list):
+   for ticker in ticker_list:
       data_for_db.append({"ticker": ticker.ticker, "mentions": [ticker.count, ticker.bullish, ticker.neutral, ticker.bearish]})
 
-
-   print(data_for_db)
-   collection.insert_one({"date": yesterday_date, 'tickers': list(data_for_db), 'first_post': first_post, 'last_post': last_post, 'last_pull': round(time.time()) })
+   collection.update_one({"date": yesterday_date}, {"$set": {'tickers': list(data_for_db), 'first_post': first_post, 'last_post': last_post, 'last_pull': round(time.time()), "comments_scraped": number_of_comments }}, True)
 
 class Ticker:
    def __init__(self, ticker):

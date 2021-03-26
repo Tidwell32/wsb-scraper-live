@@ -68,7 +68,6 @@ def parse_section(ticker_dict, body):
 
    # yup, these exist right here, idgaf
    all_tickers = [
-      "A",
       "AA",
       "AAC",
       "AACE",
@@ -283,7 +282,6 @@ def parse_section(ticker_dict, body):
       "AIKI",
       "AIMC",
       "AIMT",
-      "AIN",
       "AINC",
       "AINV",
       "AIRC",
@@ -303,8 +301,6 @@ def parse_section(ticker_dict, body):
       "AKCA",
       "AKER",
       "AKIC",
-      "AKO.A",
-      "AKO.B",
       "AKOM",
       "AKR",
       "AKRO",
@@ -718,7 +714,6 @@ def parse_section(ticker_dict, body):
       "AZUL",
       "AZYO",
       "AZZ",
-      "B",
       "BA",
       "BABA",
       "BABB",
@@ -727,7 +722,6 @@ def parse_section(ticker_dict, body):
       "BAK",
       "BALY",
       "BANC",
-      "BAND",
       "BANF",
       "BANR",
       "BANT",
@@ -737,7 +731,6 @@ def parse_section(ticker_dict, body):
       "BASI",
       "BATL",
       "BAX",
-      "BB",
       "BBAR",
       "BBBY",
       "BBCP",
@@ -807,8 +800,6 @@ def parse_section(ticker_dict, body):
       "BEP",
       "BEPC",
       "BERY",
-      "BF.A",
-      "BF.B",
       "BFAM",
       "BFC",
       "BFI",
@@ -831,7 +822,6 @@ def parse_section(ticker_dict, body):
       "BGSF",
       "BGSX",
       "BH",
-      "BH.A",
       "BHAT",
       "BHB",
       "BHC",
@@ -857,7 +847,6 @@ def parse_section(ticker_dict, body):
       "BIP",
       "BIPC",
       "BITA",
-      "BITE",
       "BIVI",
       "BJRI",
       "BK",
@@ -962,8 +951,6 @@ def parse_section(ticker_dict, body):
       "BRID",
       "BRIM",
       "BRIV",
-      "BRK.A",
-      "BRK.B",
       "BRKL",
       "BRKR",
       "BRKS",
@@ -1028,7 +1015,6 @@ def parse_section(ticker_dict, body):
       "BWB",
       "BWEN",
       "BWFG",
-      "BWL.A",
       "BWMX",
       "BWXT",
       "BX",
@@ -1501,8 +1487,6 @@ def parse_section(ticker_dict, body):
       "CRC",
       "CRCQQ",
       "CRCT",
-      "CRD.A",
-      "CRD.B",
       "CRDF",
       "CREE",
       "CREG",
@@ -1647,7 +1631,6 @@ def parse_section(ticker_dict, body):
       "CWBR",
       "CWCO",
       "CWEN",
-      "CWEN.A",
       "CWGL",
       "CWH",
       "CWK",
@@ -1687,7 +1670,6 @@ def parse_section(ticker_dict, body):
       "DAL",
       "DAO",
       "DAR",
-      "DARE",
       "DASH",
       "DAVA",
       "DB",
@@ -1758,7 +1740,6 @@ def parse_section(ticker_dict, body):
       "DIIBF",
       "DIN",
       "DIOD",
-      "DIS",
       "DISA",
       "DISCA",
       "DISCB",
@@ -2147,7 +2128,6 @@ def parse_section(ticker_dict, body):
       "EXTR",
       "EYEG",
       "EYEN",
-      "EYES",
       "EYPT",
       "EZGO",
       "EZPW",
@@ -2159,7 +2139,6 @@ def parse_section(ticker_dict, body):
       "FANG",
       "FANH",
       "FARO",
-      "FB",
       "FBC",
       "FBHS",
       "FBIO",
@@ -2470,7 +2449,6 @@ def parse_section(ticker_dict, body):
       "GECC",
       "GEENQ",
       "GEF",
-      "GEF.B",
       "GEG",
       "GEL",
       "GEN",
@@ -2678,7 +2656,6 @@ def parse_section(ticker_dict, body):
       "GSUM",
       "GSV",
       "GSX",
-      "GT",
       "GTBIF",
       "GTBP",
       "GTE",
@@ -2689,7 +2666,6 @@ def parse_section(ticker_dict, body):
       "GTHX",
       "GTIM",
       "GTN",
-      "GTN.A",
       "GTOO",
       "GTPA",
       "GTPB",
@@ -2721,7 +2697,6 @@ def parse_section(ticker_dict, body):
       "HAFC",
       "HAIN",
       "HAL",
-      "HALL",
       "HALO",
       "HAPP",
       "HARP",
@@ -2775,7 +2750,6 @@ def parse_section(ticker_dict, body):
       "HEC",
       "HEES",
       "HEI",
-      "HEI.A",
       "HELE",
       "HEMP",
       "HEP",
@@ -2953,7 +2927,6 @@ def parse_section(ticker_dict, body):
       "HZNP",
       "HZO",
       "HZON",
-      "I",
       "IAA",
       "IAC",
       "IACA",
@@ -3160,7 +3133,6 @@ def parse_section(ticker_dict, body):
       "IRM",
       "IRMD",
       "IROQ",
-      "IRS",
       "IRT",
       "IRTC",
       "IRWD",
@@ -3268,8 +3240,6 @@ def parse_section(ticker_dict, body):
       "JUPW",
       "JUVF",
       "JVA",
-      "JW.A",
-      "JW.B",
       "JWEL",
       "JWN",
       "JWS",
@@ -3307,7 +3277,6 @@ def parse_section(ticker_dict, body):
       "KELYA",
       "KELYB",
       "KEM",
-      "KEN",
       "KEP",
       "KEQU",
       "KERN",
@@ -3426,7 +3395,6 @@ def parse_section(ticker_dict, body):
       "LACQ",
       "LADR",
       "LAIX",
-      "LAKE",
       "LAMR",
       "LANC",
       "LARK",
@@ -3491,8 +3459,6 @@ def parse_section(ticker_dict, body):
       "LGAC",
       "LGC",
       "LGCYQ",
-      "LGF.A",
-      "LGF.B",
       "LGHL",
       "LGIH",
       "LGL",
@@ -3757,7 +3723,6 @@ def parse_section(ticker_dict, body):
       "MERC",
       "MESA",
       "MESO",
-      "MET",
       "METC",
       "METX",
       "MFA",
@@ -3828,7 +3793,6 @@ def parse_section(ticker_dict, body):
       "MLCO",
       "MLHR",
       "MLI",
-      "MLM",
       "MLND",
       "MLNX",
       "MLP",
@@ -3839,7 +3803,6 @@ def parse_section(ticker_dict, body):
       "MMC",
       "MMI",
       "MMLP",
-      "MMM",
       "MMMB",
       "MMP",
       "MMS",
@@ -4279,7 +4242,6 @@ def parse_section(ticker_dict, body):
       "NYMT",
       "NYMX",
       "NYT",
-      "O",
       "OAC",
       "OACA",
       "OACB",
@@ -4481,7 +4443,6 @@ def parse_section(ticker_dict, body):
       "PAX",
       "PAYA",
       "PAYC",
-      "PAYS",
       "PAYX",
       "PB",
       "PBA",
@@ -4499,7 +4460,6 @@ def parse_section(ticker_dict, body):
       "PBLT",
       "PBPB",
       "PBR",
-      "PBR.A",
       "PBSV",
       "PBT",
       "PBTS",
@@ -4542,7 +4502,6 @@ def parse_section(ticker_dict, body):
       "PEGA",
       "PEI",
       "PEIX",
-      "PEN",
       "PENN",
       "PEP",
       "PERI",
@@ -4550,7 +4509,6 @@ def parse_section(ticker_dict, body):
       "PESI",
       "PESXQ",
       "PETQ",
-      "PETS",
       "PETV",
       "PETZ",
       "PEYE",
@@ -4679,7 +4637,6 @@ def parse_section(ticker_dict, body):
       "PODD",
       "POL",
       "POLA",
-      "POOL",
       "POPE",
       "POR",
       "POSH",
@@ -4871,7 +4828,6 @@ def parse_section(ticker_dict, body):
       "RADA",
       "RADI",
       "RAII",
-      "RAMP",
       "RAND",
       "RAPT",
       "RAVE",
@@ -4910,8 +4866,6 @@ def parse_section(ticker_dict, body):
       "RDIB",
       "RDN",
       "RDNT",
-      "RDS.A",
-      "RDS.B",
       "RDUS",
       "RDVT",
       "RDWR",
@@ -4969,7 +4923,6 @@ def parse_section(ticker_dict, body):
       "RHP",
       "RIBT",
       "RICE",
-      "RIG",
       "RIGL",
       "RIHT",
       "RIII",
@@ -5033,7 +4986,6 @@ def parse_section(ticker_dict, body):
       "RONI",
       "ROP",
       "ROSEQ",
-      "ROSS",
       "ROST",
       "ROT",
       "ROYL",
@@ -5521,7 +5473,6 @@ def parse_section(ticker_dict, body):
       "SSUMY",
       "SSY",
       "SSYS",
-      "ST",
       "STAA",
       "STAF",
       "STAG",
@@ -5572,7 +5523,6 @@ def parse_section(ticker_dict, body):
       "SU",
       "SUBCY",
       "SUI",
-      "SUM",
       "SUMO",
       "SUMR",
       "SUNS",
@@ -5652,7 +5602,6 @@ def parse_section(ticker_dict, body):
       "TALO",
       "TANH",
       "TAOP",
-      "TAP",
       "TARA",
       "TARO",
       "TARS",
@@ -5989,7 +5938,6 @@ def parse_section(ticker_dict, body):
       "UAVS",
       "UBA",
       "UBCP",
-      "UBER",
       "UBFO",
       "UBOH",
       "UBP",
@@ -6038,7 +5986,6 @@ def parse_section(ticker_dict, body):
       "UNF",
       "UNFI",
       "UNH",
-      "UNIT",
       "UNM",
       "UNP",
       "UNT",
@@ -6233,7 +6180,6 @@ def parse_section(ticker_dict, body):
       "VRTU",
       "VRTV",
       "VRTX",
-      "VS",
       "VSAT",
       "VSBN",
       "VSEC",
@@ -6323,14 +6269,11 @@ def parse_section(ticker_dict, body):
       "WILC",
       "WIMI",
       "WINA",
-      "WING",
       "WINMQ",
       "WINR",
       "WINSF",
       "WINT",
-      "WIRE",
       "WISA",
-      "WIT",
       "WIX",
       "WK",
       "WKEY",
@@ -6382,7 +6325,6 @@ def parse_section(ticker_dict, body):
       "WSG",
       "WSM",
       "WSO",
-      "WSO.B",
       "WSR",
       "WST",
       "WSTG",
@@ -6462,7 +6404,6 @@ def parse_section(ticker_dict, body):
       "XYF",
       "XYL",
       "XYNO",
-      "Y",
       "YAC",
       "YALA",
       "YAYO",
@@ -6625,18 +6566,18 @@ def pull_comments_for(subreddit, start_at, end_at):
 
 comments = pull_comments_for(subreddit, twenty_minutes_ago, ten_minutes_ago)
 comments_from_reddit = comments
+number_of_comments = 0
 def run():
    data_for_db = []
    ticker_dict = {}
    new_comments = comments_from_reddit
 
-   for count, comment in enumerate(new_comments):
+   for comment in new_comments:
       
       try:
          ticker_dict = parse_section(ticker_dict, comment['body'])
                # update the progress count
-         sys.stdout.write("\rProgress: {0} comments".format(count + 1))
-         sys.stdout.flush()
+         number_of_comments =+ 1
       except:
          continue
 
@@ -6651,11 +6592,12 @@ def run():
    for ticker in ticker_list:
       Ticker.analyze_sentiment(ticker)
 
-   for count, ticker in enumerate(ticker_list):
+   for ticker in ticker_list:
       data_for_db.append({"ticker": ticker.ticker, "mentions": [ticker.count, ticker.bullish, ticker.neutral, ticker.bearish]})
 
    # unless this is the first run of the day, we add the new data to the old data and send back to mongodb
    if todays_data:
+      comments_scraped = number_of_comments + todays_data["comments_scraped"]
       data_for_mongo = []
       new_obj = {}
       for item in todays_data["tickers"]:
@@ -6668,11 +6610,11 @@ def run():
             new_obj[ticker] = [item["mentions"][0], item["mentions"][1], item["mentions"][2], item["mentions"][3]]
       for item in new_obj:
          data_for_mongo.append({"ticker": item, "mentions": new_obj[item]})
-      collection.update_one({"date": todays_date}, {"$set": {'tickers': list(data_for_mongo), 'last_pull': round(time.time())}}, True)
+      collection.update_one({"date": todays_date}, {"$set": {'tickers': list(data_for_mongo), 'last_pull': round(time.time())}, "comments_scraped": number_of_comments}, True)
    
    # first scrape of the day
    else:
-      collection.insert_one({"date": todays_date, 'tickers': list(data_for_db), 'last_pull': round(time.time()) })
+      collection.insert_one({"date": todays_date, 'tickers': list(data_for_db), "comments_scraped": number_of_comments, 'last_pull': round(time.time()) })
 
 class Ticker:
       def __init__(self, ticker):
