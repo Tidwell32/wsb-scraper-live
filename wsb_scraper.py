@@ -14,7 +14,6 @@ from pymongo import MongoClient
 import datetime
 import pylint
 from os import environ
-from praw.models import MoreComments
 from collections import defaultdict
 from vaderSentiment.vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 

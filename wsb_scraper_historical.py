@@ -13,10 +13,8 @@ import pymongo
 from pymongo import MongoClient
 from datetime import datetime, date, timedelta
 from datetime import time as dtime
-import praw
 import pylint
 from os import environ
-from praw.models import MoreComments
 from collections import defaultdict
 from vaderSentiment.vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
