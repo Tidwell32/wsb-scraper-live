@@ -5,40 +5,36 @@ import time
 import json
 import pprint
 import operator
+import math
 import json
 import requests
+import itertools
 import pymongo
 from pymongo import MongoClient
 import datetime
-import praw
 import pylint
-import os
 from os import environ
 from praw.models import MoreComments
+from collections import defaultdict
 from vaderSentiment.vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 MONGO_DB = environ['MONGO_DB']
-CLIENT_ID = environ['CLIENT_ID']
-CLIENT_SECRET = environ['CLIENT_SECRET']
-USER_AGENT = environ['USER_AGENT']
-
 cluster = MongoClient(MONGO_DB)
 db = cluster["wsb_momentum"]
 collection = db["daily_mentions"]
 subreddit = 'wallstreetbets'
-reddit = praw.Reddit(
-   client_id=CLIENT_ID,
-   client_secret=CLIENT_SECRET,
-   user_agent=USER_AGENT)
 todays_date = moment.now().format("YYYY-MM-DD")
 todays_data = collection.find_one({"date": todays_date})
 now = round(time.time())
 ten_minutes_ago = now - 600
 twenty_minutes_ago = now - 1200
 
+
 def extract_ticker(body, start_index):
-   # Given a starting index and text, this will extract the ticker, return None if it is incorrectly formatted.
-   count = 0
+   """
+   Given a starting index and text, this will extract the ticker, return None if it is incorrectly formatted.
+   """
+   count  = 0
    ticker = ""
 
    for char in body[start_index:]:
@@ -46,7 +42,7 @@ def extract_ticker(body, start_index):
       if not char.isalpha():
          # if there aren't any letters following the $
          if (count == 0):
-            return None
+               return None
 
          return ticker.upper()
       else:
@@ -56,7 +52,7 @@ def extract_ticker(body, start_index):
    return ticker.upper()
 
 def parse_section(ticker_dict, body):
-   # Parses the body of each comment/reply
+   """ Parses the body of each comment/reply """
    blacklist_words = [
       "YOLO", "TOS", "CEO", "CFO", "CTO", "DD", "BTFD", "WSB", "OK", "RH",
       "KYS", "FD", "TYS", "US", "USA", "IT", "ATH", "RIP", "BMW", "GDP",
@@ -4685,6 +4681,7 @@ def parse_section(ticker_dict, body):
       "PODD",
       "POL",
       "POLA",
+      "POOL",
       "POPE",
       "POR",
       "POSH",
@@ -6558,15 +6555,16 @@ def parse_section(ticker_dict, body):
       word = extract_ticker(body, index)
       if word and word in all_tickers and word not in blacklist_words:
          try:
-            if word in ticker_dict:
-               ticker_dict[word].count += 1
-               ticker_dict[word].bodies.append(body)
-            else:
-               ticker_dict[word] = Ticker(word)
-               ticker_dict[word].count = 1
-               ticker_dict[word].bodies.append(body)
+               if word in ticker_dict:
+                  ticker_dict[word].count += 1
+                  ticker_dict[word].bodies.append(body)
+               else:
+                  ticker_dict[word] = Ticker(word)
+                  ticker_dict[word].count = 1
+                  ticker_dict[word].bodies.append(body)
          except:
-            pass
+               pass
+   
    # checks for non-$ formatted comments, splits every body into list of words
    word_list = re.sub("[^\w]", " ",  body).split()
    for count, word in enumerate(word_list):
@@ -6575,54 +6573,74 @@ def parse_section(ticker_dict, body):
       if len(upper_case) != 1 and (upper_case not in blacklist_words) and len(upper_case) <= 5 and upper_case.isalpha() and upper_case in all_tickers:
          # add/adjust value of dictionary
          if upper_case in ticker_dict:
-            ticker_dict[upper_case].count += 1
-            ticker_dict[upper_case].bodies.append(body)
+               ticker_dict[upper_case].count += 1
+               ticker_dict[upper_case].bodies.append(body)
          else:
-            ticker_dict[upper_case] = Ticker(upper_case)
-            ticker_dict[upper_case].count = 1
-            ticker_dict[upper_case].bodies.append(body)
+               ticker_dict[upper_case] = Ticker(upper_case)
+               ticker_dict[upper_case].count = 1
+               ticker_dict[upper_case].bodies.append(body)
    return ticker_dict
 
-TIMEOUT_AFTER_COMMENT_IN_SECS = .4
-posts_from_reddit = []
-comments_from_reddit = []
-comments_from_reddit = reddit.subreddit('wallstreetbets').comments(limit=1000)
-posts_from_reddit = reddit.subreddit('wallstreetbets').new()
-counting_fetches = 0
+def make_request(uri, max_retries = 5):
+   def fire_away(uri):
+      response = requests.get(uri)
+      assert response.status_code == 200
+      return json.loads(response.content)
+   current_tries = 1
+   while current_tries < max_retries:
+      try:
+         time.sleep(1)
+         response = fire_away(uri)
+         return response
+      except:
+         time.sleep(1)
+         current_tries += 1
+   return fire_away(uri)
 
+def pull_comments_for(subreddit, start_at, end_at):
+   def map_comments(comments):
+      return list(map(lambda comment: {
+         'id': comment['id'],
+         'body': comment['body'],
+         'created_utc': comment['created_utc'],
+      }, comments))  
+   SIZE = 250
+   URI_TEMPLATE = r'https://beta.pushshift.io/search/reddit/comments?subreddit={}&min_created_utc={}&max_created_utc={}&min_score=1&size={}&sort=asc'
+
+   comments_collections = map_comments( \
+      make_request( \
+         URI_TEMPLATE.format( \
+               subreddit, start_at, end_at, SIZE))['data'])
+   n = len(comments_collections)
+   while n == SIZE:
+      last = comments_collections[-1]
+      new_start_at = last['created_utc'] + (1)
+      more_comments = map_comments( \
+         make_request( \
+               URI_TEMPLATE.format( \
+               subreddit, new_start_at, end_at, SIZE))['data'])
+      n = len(more_comments)
+      comments_collections.extend(more_comments)
+   return comments_collections
+
+
+
+comments = pull_comments_for(subreddit, twenty_minutes_ago, ten_minutes_ago)
+comments_from_reddit = comments
 def run():
    data_for_db = []
    ticker_dict = {}
    new_comments = comments_from_reddit
-   new_posts = posts_from_reddit
-
-   for count, post in enumerate(new_posts):
-      try:
-         if post.score > 0 and post.created_utc <= ten_minutes_ago and post.created_utc >= twenty_minutes_ago:
-            ticker_dict = parse_section(ticker_dict, post.title)
-      # on a very rare occasion, a post or comment disappears into the ether and causes an error
-      except:
-         continue
 
    for count, comment in enumerate(new_comments):
+      
       try:
-         if isinstance(comment, MoreComments):
-            continue
-         if comment.score > 0 and comment.created_utc <= ten_minutes_ago and comment.created_utc >= twenty_minutes_ago:
-            ticker_dict = parse_section(ticker_dict, comment.body)
-         if comment.score > 0 and comment.created_utc <= ten_minutes_ago:   
-            comment.refresh()
-            replies = comment.replies
-            for rep in replies:
-               if isinstance(rep, MoreComments):
-                  continue
-               if rep.score > 0 and rep.created_utc <= ten_minutes_ago and rep.created_utc >= twenty_minutes_ago:
-                  ticker_dict = parse_section(ticker_dict, rep.body)
+         ticker_dict = parse_section(ticker_dict, comment['body'])
+               # update the progress count
+         sys.stdout.write("\rProgress: {0} comments".format(count + 1))
+         sys.stdout.flush()
       except:
-         continue    
-      # update the progress count
-      sys.stdout.write("\rProgress: {0} posts".format(count + 1))
-      sys.stdout.flush()
+         continue
 
    total_mentions = 0
    ticker_list = []
@@ -6643,11 +6661,11 @@ def run():
       data_for_mongo = []
       new_obj = {}
       for item in todays_data["tickers"]:
-         new_obj[item["ticker"]] = item["mentions"]
+            new_obj[item["ticker"]] = item["mentions"]
       for item in data_for_db:
          ticker = item["ticker"]
          try:
-            new_obj[ticker] = [new_obj[ticker][0] + item["mentions"][0], round(((new_obj[ticker][0] * (new_obj[ticker][1] / 100)) + (item["mentions"][0] * (item["mentions"][1] / 100))) / (item["mentions"][0] +  new_obj[ticker][0]) * 100), round(((new_obj[ticker][0] * (new_obj[ticker][2] / 100)) + (item["mentions"][0] * (item["mentions"][2] / 100))) / (item["mentions"][0] +  new_obj[ticker][0]) * 100), round(((new_obj[ticker][0] * (new_obj[ticker][3] / 100)) + (item["mentions"][0] * (item["mentions"][3] / 100))) / (item["mentions"][0] +  new_obj[ticker][0]) * 100)]
+               new_obj[ticker] = [new_obj[ticker][0] + item["mentions"][0], round(((new_obj[ticker][0] * (new_obj[ticker][1] / 100)) + (item["mentions"][0] * (item["mentions"][1] / 100))) / (item["mentions"][0] +  new_obj[ticker][0]) * 100), round(((new_obj[ticker][0] * (new_obj[ticker][2] / 100)) + (item["mentions"][0] * (item["mentions"][2] / 100))) / (item["mentions"][0] +  new_obj[ticker][0]) * 100), round(((new_obj[ticker][0] * (new_obj[ticker][3] / 100)) + (item["mentions"][0] * (item["mentions"][3] / 100))) / (item["mentions"][0] +  new_obj[ticker][0]) * 100)]
          except:
             new_obj[ticker] = [item["mentions"][0], item["mentions"][1], item["mentions"][2], item["mentions"][3]]
       for item in new_obj:
@@ -6659,31 +6677,31 @@ def run():
       collection.insert_one({"date": todays_date, 'tickers': list(data_for_db), 'last_pull': round(time.time()) })
 
 class Ticker:
-   def __init__(self, ticker):
-      self.ticker = ticker
-      self.count = 0
-      self.bodies = []
-      self.pos_count = 0
-      self.neg_count = 0
-      self.bullish = 0
-      self.bearish = 0
-      self.neutral = 0
-      self.sentiment = 0 # 0 is neutral
+      def __init__(self, ticker):
+         self.ticker = ticker
+         self.count = 0
+         self.bodies = []
+         self.pos_count = 0
+         self.neg_count = 0
+         self.bullish = 0
+         self.bearish = 0
+         self.neutral = 0
+         self.sentiment = 0 # 0 is neutral
 
-   def analyze_sentiment(self):
-      analyzer = SentimentIntensityAnalyzer()
-      neutral_count = 0
-      for text in self.bodies:
-         sentiment = analyzer.polarity_scores(text)
-         if (sentiment["compound"] > .005) or (sentiment["pos"] > abs(sentiment["neg"])):
-            self.pos_count += 1
-         elif (sentiment["compound"] < -.005) or (abs(sentiment["neg"]) > sentiment["pos"]):
-            self.neg_count += 1
-         else:
-            neutral_count += 1
+      def analyze_sentiment(self):
+         analyzer = SentimentIntensityAnalyzer()
+         neutral_count = 0
+         for text in self.bodies:
+            sentiment = analyzer.polarity_scores(text)
+            if (sentiment["compound"] > .005) or (sentiment["pos"] > abs(sentiment["neg"])):
+                  self.pos_count += 1
+            elif (sentiment["compound"] < -.005) or (abs(sentiment["neg"]) > sentiment["pos"]):
+                  self.neg_count += 1
+            else:
+                  neutral_count += 1
 
-      self.bullish = int(self.pos_count / len(self.bodies) * 100)
-      self.bearish = int(self.neg_count / len(self.bodies) * 100)
-      self.neutral = int(neutral_count / len(self.bodies) * 100)
+         self.bullish = int(self.pos_count / len(self.bodies) * 100)
+         self.bearish = int(self.neg_count / len(self.bodies) * 100)
+         self.neutral = int(neutral_count / len(self.bodies) * 100)
 
 run()

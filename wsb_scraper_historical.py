@@ -20,37 +20,25 @@ from praw.models import MoreComments
 from collections import defaultdict
 from vaderSentiment.vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-dt = datetime.combine(date.today(), dtime(0, 0, 0))
-
-start_at = int((dt - timedelta(days=3)).timestamp())
-three_days_ago_unix = int((dt - timedelta(hours=60)).timestamp())
-end_at = start_at + 86400
-three_days_ago_date = moment.unix(three_days_ago_unix).format('YYYY-MM-DD')
-
 MONGO_DB = environ['MONGO_DB']
-CLIENT_ID = environ['CLIENT_ID']
-CLIENT_SECRET = environ['CLIENT_SECRET']
-USER_AGENT = environ['USER_AGENT']
-
 cluster = MongoClient(MONGO_DB)
 db = cluster["wsb_momentum"]
 collection = db["daily_mentions"]
-three_days_ago_data = collection.find_one({"date": three_days_ago_date})
+dt = datetime.combine(date.today(), dtime(0, 0, 0))
+yesterday_unix = int((dt - timedelta(hours=12)).timestamp())
+yesterday_date = moment.unix(yesterday_unix).format('YYYY-MM-DD')
+yesterday_data = collection.find_one({"date": yesterday_date})
+collection.insert_one({"date": yesterday_date + "-BACKUP", 'tickers': list(yesterday_data["tickers"]), 'last_pull': round(time.time()) })
+
+start_at = int((dt - timedelta(days=1)).timestamp())
+end_at = start_at + 86400
 subreddit = 'wallstreetbets'
-reddit = praw.Reddit(
-   client_id=CLIENT_ID,
-   client_secret=CLIENT_SECRET,
-   user_agent=USER_AGENT)
-
-first_pull = 0
-last_pull = 0
-
 
 def extract_ticker(body, start_index):
    """
    Given a starting index and text, this will extract the ticker, return None if it is incorrectly formatted.
    """
-   count = 0
+   count  = 0
    ticker = ""
 
    for char in body[start_index:]:
@@ -58,7 +46,7 @@ def extract_ticker(body, start_index):
       if not char.isalpha():
          # if there aren't any letters following the $
          if (count == 0):
-            return None
+               return None
 
          return ticker.upper()
       else:
@@ -4697,6 +4685,7 @@ def parse_section(ticker_dict, body):
       "PODD",
       "POL",
       "POLA",
+      "POOL",
       "POPE",
       "POR",
       "POSH",
@@ -6570,15 +6559,15 @@ def parse_section(ticker_dict, body):
       word = extract_ticker(body, index)
       if word and word in all_tickers and word not in blacklist_words:
          try:
-            if word in ticker_dict:
-               ticker_dict[word].count += 1
-               ticker_dict[word].bodies.append(body)
-            else:
-               ticker_dict[word] = Ticker(word)
-               ticker_dict[word].count = 1
-               ticker_dict[word].bodies.append(body)
+               if word in ticker_dict:
+                  ticker_dict[word].count += 1
+                  ticker_dict[word].bodies.append(body)
+               else:
+                  ticker_dict[word] = Ticker(word)
+                  ticker_dict[word].count = 1
+                  ticker_dict[word].bodies.append(body)
          except:
-            pass
+               pass
    
    # checks for non-$ formatted comments, splits every body into list of words
    word_list = re.sub("[^\w]", " ",  body).split()
@@ -6588,12 +6577,12 @@ def parse_section(ticker_dict, body):
       if len(upper_case) != 1 and (upper_case not in blacklist_words) and len(upper_case) <= 5 and upper_case.isalpha() and upper_case in all_tickers:
          # add/adjust value of dictionary
          if upper_case in ticker_dict:
-            ticker_dict[upper_case].count += 1
-            ticker_dict[upper_case].bodies.append(body)
+               ticker_dict[upper_case].count += 1
+               ticker_dict[upper_case].bodies.append(body)
          else:
-            ticker_dict[upper_case] = Ticker(upper_case)
-            ticker_dict[upper_case].count = 1
-            ticker_dict[upper_case].bodies.append(body)
+               ticker_dict[upper_case] = Ticker(upper_case)
+               ticker_dict[upper_case].count = 1
+               ticker_dict[upper_case].bodies.append(body)
    return ticker_dict
 
 def make_request(uri, max_retries = 5):
@@ -6612,83 +6601,54 @@ def make_request(uri, max_retries = 5):
          current_tries += 1
    return fire_away(uri)
 
-def pull_posts_for(subreddit, start_at, end_at):
-   def map_posts(posts):
-      return list(map(lambda post: {
-         'id': post['id'],
-         'created_utc': post['created_utc'],
-         'num_comments': post['num_comments'],
-         'prefix': 't4_',
-      }, posts))  
-   SIZE = 100
-   URI_TEMPLATE = r'https://api.pushshift.io/reddit/search/submission?subreddit={}&after={}&before={}&size={}'
+def pull_comments_for(subreddit, start_at, end_at):
+   def map_comments(comments):
+      return list(map(lambda comment: {
+         'id': comment['id'],
+         'body': comment['body'],
+         'created_utc': comment['created_utc'],
+      }, comments))  
+   SIZE = 250
+   URI_TEMPLATE = r'https://beta.pushshift.io/search/reddit/comments?subreddit={}&min_created_utc={}&max_created_utc={}&min_score=1&size={}&sort=asc'
 
-   post_collections = map_posts( \
+   comments_collections = map_comments( \
       make_request( \
          URI_TEMPLATE.format( \
-            subreddit, start_at, end_at, SIZE))['data'])
-   n = len(post_collections)
+               subreddit, start_at, end_at, SIZE))['data'])
+   n = len(comments_collections)
    while n == SIZE:
-      last = post_collections[-1]
-      new_start_at = last['created_utc'] - (10)
-      more_posts = map_posts( \
+      last = comments_collections[-1]
+      new_start_at = last['created_utc'] + (1)
+      print('new start ', new_start_at, last['id'])
+      more_comments = map_comments( \
          make_request( \
-            URI_TEMPLATE.format( \
+               URI_TEMPLATE.format( \
                subreddit, new_start_at, end_at, SIZE))['data'])
-      n = len(more_posts)
-      post_collections.extend(more_posts)
-   return post_collections
+      n = len(more_comments)
+      comments_collections.extend(more_comments)
+   return comments_collections
 
 
 
-posts = pull_posts_for(subreddit, start_at, end_at)
-TIMEOUT_AFTER_COMMENT_IN_SECS = .4
-posts_from_reddit = []
-for post in posts:
-   if post['num_comments'] > 1:
-      submission = reddit.submission(id=post['id'])
-      posts_from_reddit.append(submission)
-      try:
-         submission.comments.replace_more()
-      except: 
-         time.sleep(1)
-      if TIMEOUT_AFTER_COMMENT_IN_SECS > 0:
-         time.sleep(TIMEOUT_AFTER_COMMENT_IN_SECS)
-
+comments = pull_comments_for(subreddit, start_at, end_at)
+comments_from_reddit = comments
 def run():
    data_for_db = []
    ticker_dict = {}
-   new_posts = posts_from_reddit
-   first_post = posts_from_reddit[0].created_utc
-   last_post = posts_from_reddit[-1].created_utc
+   new_comments = comments_from_reddit
+   first_post = comments_from_reddit[0]['created_utc']
+   last_post = comments_from_reddit[-1]['created_utc']
 
-   for count, post in enumerate(new_posts):
+   for count, comment in enumerate(new_comments):
+      
       try:
-         ticker_dict = parse_section(ticker_dict, post.title)
-            # search through all comments and replies to comments
-         comments = post.comments
-         for comment in comments:
-            if comment.score > 0:
-               # without this, would throw AttributeError since the instance in this represents the "load more comments" option
-               if isinstance(comment, MoreComments):
-                  continue
-               ticker_dict = parse_section(ticker_dict, comment.body)
-               # iterate through the comment's replies
-               replies = comment.replies
-               for rep in replies:
-                  try:
-                     if rep.score > 0:
-                        # without this, would throw AttributeError since the instance in this represents the "load more comments" option
-                        if isinstance(rep, MoreComments):
-                           continue
-                        ticker_dict = parse_section(ticker_dict, rep.body)
-                  except:
-                     continue
-               
-            # update the progress count
-         sys.stdout.write("\rProgress: {0} posts".format(count + 1))
+         print(comment['id'])
+         ticker_dict = parse_section(ticker_dict, comment['body'])
+               # update the progress count
+         sys.stdout.write("\rProgress: {0} comments".format(count + 1))
          sys.stdout.flush()
       except:
+         print('something failed')
          continue
 
    total_mentions = 0
@@ -6705,11 +6665,9 @@ def run():
    for count, ticker in enumerate(ticker_list):
       data_for_db.append({"ticker": ticker.ticker, "mentions": [ticker.count, ticker.bullish, ticker.neutral, ticker.bearish]})
 
-   if last_post < (end_at - 600):
-      collection.insert_one({"date": three_days_ago_date + "-GAP", 'tickers': list(data_for_db), 'first_post': first_post, 'last_post': last_post, 'last_pull': round(time.time()) })
-   else:
-      collection.insert_one({"date": three_days_ago_date + "-LIVEDATA", 'tickers': list(three_days_ago_data["tickers"]), 'last_pull': round(time.time()) })
-      collection.update_one({"date": three_days_ago_date}, {"$set": {'tickers': list(data_for_db), 'first_post': first_post, 'last_post': last_post, 'last_pull': round(time.time())}})
+
+   print(data_for_db)
+   collection.insert_one({"date": yesterday_date, 'tickers': list(data_for_db), 'first_post': first_post, 'last_post': last_post, 'last_pull': round(time.time()) })
 
 class Ticker:
    def __init__(self, ticker):
@@ -6729,11 +6687,11 @@ class Ticker:
       for text in self.bodies:
          sentiment = analyzer.polarity_scores(text)
          if (sentiment["compound"] > .005) or (sentiment["pos"] > abs(sentiment["neg"])):
-            self.pos_count += 1
+               self.pos_count += 1
          elif (sentiment["compound"] < -.005) or (abs(sentiment["neg"]) > sentiment["pos"]):
-            self.neg_count += 1
+               self.neg_count += 1
          else:
-            neutral_count += 1
+               neutral_count += 1
 
       self.bullish = int(self.pos_count / len(self.bodies) * 100)
       self.bearish = int(self.neg_count / len(self.bodies) * 100)
