@@ -17,8 +17,7 @@ from os import environ
 from collections import defaultdict
 from vaderSentiment.vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
-MONGO_DB = "mongodb+srv://ZTidwell:Twinkie12!@cluster0.blwoc.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-# MONGO_DB = environ['MONGO_DB']
+MONGO_DB = environ['MONGO_DB']
 cluster = MongoClient(MONGO_DB)
 db = cluster["wsb_momentum"]
 collection = db["daily_mentions"]
@@ -26,8 +25,8 @@ subreddit = 'wallstreetbets'
 todays_date = moment.now().format("YYYY-MM-DD")
 todays_data = collection.find_one({"date": todays_date})
 now = round(time.time())
-twenty_minutes_ago = todays_data['last_post'] if todays_data else now - 1200
-ten_minutes_ago = twenty_minutes_ago + 600
+twenty_minutes_ago = todays_data['last_post'] + 1 if todays_data else now - 1200
+ten_minutes_ago = now - 600
 
 def extract_ticker(body, start_index):
    """
