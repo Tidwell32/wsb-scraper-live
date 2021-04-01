@@ -26,7 +26,7 @@ dt = datetime.combine(date.today(), dtime(0, 0, 0))
 yesterday_unix = int((dt - timedelta(hours=12)).timestamp())
 yesterday_date = moment.unix(yesterday_unix).format('YYYY-MM-DD')
 yesterday_data = collection.find_one({"date": yesterday_date})
-collection.insert_one({"date": yesterday_date + "-BACKUP", 'tickers': list(yesterday_data["tickers"]), 'last_pull': round(time.time()) })
+collection.insert_one({"date": yesterday_date + "-BACKUP", 'tickers': list(yesterday_data["tickers"]), 'last_pull': yesterday_data["last_pull"], 'first_post': yesterday_data["first_post"], 'last_post': yesterday_data["last_post"] })
 
 start_at = int((dt - timedelta(days=1)).timestamp())
 end_at = start_at + 86400
@@ -520,6 +520,7 @@ def parse_section(ticker_dict, body):
       "ARGX",
       "ARI",
       "ARKK",
+      "ARKX",
       "ARKG",
       "ARKW",
       "ARKF",
@@ -745,6 +746,7 @@ def parse_section(ticker_dict, body):
       "BBGI",
       "BBI",
       "BBIG",
+      "BIGZ",
       "BBIO",
       "BBL",
       "BBSI",
@@ -3683,6 +3685,7 @@ def parse_section(ticker_dict, body):
       "LVRA",
       "LVRX",
       "LVS",
+      "LVTX"
       "LW",
       "LWAC",
       "LWAY",
@@ -5821,7 +5824,6 @@ def parse_section(ticker_dict, body):
       "TGTX",
       "TH",
       "THBR",
-      "THC",
       "THCA",
       "THCB",
       "THFF",
@@ -6122,6 +6124,7 @@ def parse_section(ticker_dict, body):
       "UIHC",
       "UIS",
       "UL",
+      "ULCC",
       "ULBI",
       "ULH",
       "ULTA",

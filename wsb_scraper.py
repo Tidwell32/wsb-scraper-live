@@ -516,6 +516,7 @@ def parse_section(ticker_dict, body):
       "ARGX",
       "ARI",
       "ARKK",
+      "ARKX",
       "ARKG",
       "ARKW",
       "ARKF",
@@ -741,6 +742,7 @@ def parse_section(ticker_dict, body):
       "BBGI",
       "BBI",
       "BBIG",
+      "BIGZ",
       "BBIO",
       "BBL",
       "BBSI",
@@ -3679,6 +3681,7 @@ def parse_section(ticker_dict, body):
       "LVRA",
       "LVRX",
       "LVS",
+      "LVTX"
       "LW",
       "LWAC",
       "LWAY",
@@ -5817,7 +5820,6 @@ def parse_section(ticker_dict, body):
       "TGTX",
       "TH",
       "THBR",
-      "THC",
       "THCA",
       "THCB",
       "THFF",
@@ -6118,6 +6120,7 @@ def parse_section(ticker_dict, body):
       "UIHC",
       "UIS",
       "UL",
+      "ULCC",
       "ULBI",
       "ULH",
       "ULTA",
@@ -6748,7 +6751,6 @@ def run():
    last_post = comments_from_reddit[-1]['created_utc']
 
    for count, comment in enumerate(new_comments):
-      
       try:
          ticker_dict = parse_section(ticker_dict, comment['body'])
       except:
@@ -6784,7 +6786,7 @@ def run():
             new_obj[ticker] = [item["mentions"][0], item["mentions"][1], item["mentions"][2], item["mentions"][3]]
       for item in new_obj:
          data_for_mongo.append({"ticker": item, "mentions": new_obj[item]})
-      collection.update_one({"date": todays_date}, {"$set": {'tickers': list(data_for_mongo), 'last_pull': round(time.time()), 'first_post': first_post, 'last_post': last_post, "comments_scraped": comments_scraped}}, True)
+      collection.update_one({"date": todays_date}, {"$set": {'tickers': list(data_for_mongo), 'last_pull': round(time.time()), 'first_post': todays_data["first_post"], 'last_post': last_post, "comments_scraped": comments_scraped}}, True)
    
    # first scrape of the day
    else:
