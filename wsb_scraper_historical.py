@@ -26,7 +26,7 @@ dt = datetime.combine(date.today(), dtime(0, 0, 0))
 yesterday_unix = int((dt - timedelta(hours=12)).timestamp())
 yesterday_date = moment.unix(yesterday_unix).format('YYYY-MM-DD')
 yesterday_data = collection.find_one({"date": yesterday_date})
-collection.insert_one({"date": yesterday_date + "-BACKUP", 'tickers': list(yesterday_data["tickers"]), 'last_pull': yesterday_data["last_pull"], 'first_post': yesterday_data["first_post"], 'last_post': yesterday_data["last_post"] })
+
 start_at = int((dt - timedelta(days=1)).timestamp())
 end_at = start_at + 86399
 subreddit = 'wallstreetbets'
@@ -6775,7 +6775,12 @@ def run():
    for ticker in ticker_list:
       data_for_db.append({"ticker": ticker.ticker, "mentions": [ticker.count, ticker.bullish, ticker.neutral, ticker.bearish]})
 
-   collection.update_one({"date": yesterday_date}, {"$set": {'tickers': list(data_for_db), 'first_post': first_post, 'last_post': last_post, 'last_pull': round(time.time()), "comments_scraped": number_of_comments }}, True)
+   if number_of_comments >= yesterday_data["comments_scraped"]:
+      collection.insert_one({"date": yesterday_date + "-BACKUP", 'tickers': list(yesterday_data["tickers"]), 'last_pull': yesterday_data["last_pull"], 'first_post': yesterday_data["first_post"], 'last_post': yesterday_data["last_post"], 'comments_scraped': yesterday_data["comments_scraped"] })
+      collection.update_one({"date": yesterday_date}, {"$set": {'tickers': list(data_for_db), 'first_post': first_post, 'last_post': last_post, 'last_pull': round(time.time()), "comments_scraped": number_of_comments }}, True)
+   else:
+      collection.insert_one({"date": yesterday_date + "-H-BACKUP"}, {"$set": {'tickers': list(data_for_db), 'first_post': first_post, 'last_post': last_post, 'last_pull': round(time.time()), "comments_scraped": number_of_comments }}, True)
+   
 
 class Ticker:
    def __init__(self, ticker):
