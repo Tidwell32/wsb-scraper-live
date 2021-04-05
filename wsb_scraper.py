@@ -4143,7 +4143,6 @@ def parse_section(ticker_dict, body):
       "NHLD",
       "NHTC",
       "NI",
-      "NINE",
       "NIO",
       "NIOBF",
       "NISN",
