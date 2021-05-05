@@ -2542,7 +2542,6 @@ def parse_section(ticker_dict, body):
       "GIB",
       "GIDYL",
       "GIFI",
-      "GIG",
       "GIGA",
       "GIGM",
       "GIII",
