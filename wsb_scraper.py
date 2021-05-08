@@ -6741,12 +6741,15 @@ def pull_comments_for(subreddit, start_at, end_at):
    return comments_collections
 
 def pull_comments_the_dumb_way(subreddit, start_at, end_at):
+   print('before praw')
    reddit = praw.Reddit(
       client_id=CLIENT_ID,
       client_secret=CLIENT_SECRET,
       user_agent=USER_AGENT
    )
+   print('after praw')
    comments_from_reddit = reddit.subreddit(subreddit).comments(limit=1000)
+   print('after comments')
    ticker_dict = {}
    comments_within_timeframe = []
 
