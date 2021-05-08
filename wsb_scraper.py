@@ -6708,8 +6708,6 @@ def make_request(uri, max_retries = 5):
          current_tries += 1
    return fire_away(uri)
 
-'https://beta.pushshift.io/search/reddit/comments?subreddit=wallstreetbets&min_created_utc=1620431790&max_created_utc=1620438248&min_score=1&size=250&sort=asc
-
 def pull_comments_for(subreddit, start_at, end_at):
    def map_comments(comments):
       return list(map(lambda comment: {
@@ -6740,7 +6738,7 @@ def pull_comments_for(subreddit, start_at, end_at):
             comments_collections.extend(more_comments)
    except:
       comments_collections = pull_comments_the_dumb_way(subreddit, start_at, end_at)
-      
+
    return comments_collections
 
 def pull_comments_the_dumb_way(subreddit, start_at, end_at):
