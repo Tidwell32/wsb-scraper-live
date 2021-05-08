@@ -6746,7 +6746,7 @@ def pull_comments_the_dumb_way(subreddit, start_at, end_at):
       client_secret=CLIENT_SECRET,
       user_agent=USER_AGENT
    )
-   comments_from_reddit = reddit.subreddit('wallstreetbets').comments(limit=1000)
+   comments_from_reddit = reddit.subreddit(subreddit).comments(limit=1000)
    ticker_dict = {}
    comments_within_timeframe = []
 
@@ -6754,15 +6754,15 @@ def pull_comments_the_dumb_way(subreddit, start_at, end_at):
       try:
          if isinstance(comment, MoreComments):
             continue
-         if comment.score > 0 and comment.created_utc <= ten_minutes_ago and comment.created_utc >= twenty_minutes_ago:
+         if comment.score > 0 and comment.created_utc <= end_at and comment.created_utc >= start_at:
             comments_within_timeframe.append({'id': comment.id, 'body': comment.body, 'created_utc': comment.created_utc})
-         if comment.score > 0 and comment.created_utc <= ten_minutes_ago:   
+         if comment.score > 0 and comment.created_utc <= end_at:   
             comment.refresh()
             replies = comment.replies
             for rep in replies:
                if isinstance(rep, MoreComments):
                   continue
-               if rep.score > 0 and rep.created_utc <= ten_minutes_ago and rep.created_utc >= twenty_minutes_ago:
+               if rep.score > 0 and rep.created_utc <= end_at and rep.created_utc >= start_at:
                   comments_within_timeframe.append({'id': rep.id, 'body': rep.body, 'created_utc': rep.created_utc})
       except:
          continue
