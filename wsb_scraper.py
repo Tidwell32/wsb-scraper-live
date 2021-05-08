@@ -30,9 +30,7 @@ subreddit = 'wallstreetbets'
 todays_date = moment.now().format("YYYY-MM-DD")
 todays_data = collection.find_one({"date": todays_date})
 now = round(time.time())
-twenty_minutes_ago = 1620430200
 twenty_minutes_ago = todays_data['last_post'] + 1 if todays_data else now - 1200
-ten_minutes_ago = 1620432520 - 600
 ten_minutes_ago = now - 600
 
 def extract_ticker(body, start_index):
