@@ -6708,7 +6708,7 @@ def make_request(uri, max_retries = 5):
          current_tries += 1
    return fire_away(uri)
 
-
+'https://beta.pushshift.io/search/reddit/comments?subreddit=wallstreetbets&min_created_utc=1620431790&max_created_utc=1620438248&min_score=1&size=250&sort=asc
 
 def pull_comments_for(subreddit, start_at, end_at):
    def map_comments(comments):
@@ -6717,27 +6717,30 @@ def pull_comments_for(subreddit, start_at, end_at):
          'body': comment['body'],
          'created_utc': comment['created_utc'],
       }, comments))  
-   SIZE = 250
-   URI_TEMPLATE = r'https://beta.pushshift.io/search/reddit/comments?subreddit={}&min_created_utc={}&max_created_utc={}&min_score=1&size={}&sort=asc'
-   comments_collections = None
-   comments_collections = map_comments( \
-      make_request( \
-         URI_TEMPLATE.format( \
-               subreddit, start_at, end_at, SIZE))['data'])
-   n = len(comments_collections)
-   if (n == 0):
+   try:
+      SIZE = 250
+      URI_TEMPLATE = r'https://beta.pushshift.io/search/reddit/comments?subreddit={}&min_created_utc={}&max_created_utc={}&min_score=1&size={}&sort=asc'
+      comments_collections = None
+      comments_collections = map_comments( \
+         make_request( \
+            URI_TEMPLATE.format( \
+                  subreddit, start_at, end_at, SIZE))['data'])
+      n = len(comments_collections)
+      if (n == 0):
+         comments_collections = pull_comments_the_dumb_way(subreddit, start_at, end_at)
+      else:
+         while n == SIZE:
+            last = comments_collections[-1]
+            new_start_at = last['created_utc'] + (1)
+            more_comments = map_comments( \
+               make_request( \
+                     URI_TEMPLATE.format( \
+                     subreddit, new_start_at, end_at, SIZE))['data'])
+            n = len(more_comments)
+            comments_collections.extend(more_comments)
+   except:
       comments_collections = pull_comments_the_dumb_way(subreddit, start_at, end_at)
-   else:
-      while n == SIZE:
-         last = comments_collections[-1]
-         new_start_at = last['created_utc'] + (1)
-         more_comments = map_comments( \
-            make_request( \
-                  URI_TEMPLATE.format( \
-                  subreddit, new_start_at, end_at, SIZE))['data'])
-         n = len(more_comments)
-         comments_collections.extend(more_comments)
-
+      
    return comments_collections
 
 def pull_comments_the_dumb_way(subreddit, start_at, end_at):
