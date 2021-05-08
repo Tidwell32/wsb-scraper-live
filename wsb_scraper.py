@@ -1,6 +1,8 @@
 import re
 import sys
 import moment
+import praw
+from praw.models import MoreComments
 import time
 import json
 import pprint
@@ -18,6 +20,9 @@ from collections import defaultdict
 from vaderSentiment.vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 MONGO_DB = environ['MONGO_DB']
+CLIENT_ID = environ['CLIENT_ID']
+CLIENT_SECRET = environ['CLIENT_SECRET']
+USER_AGENT = environ['USER_AGENT']
 cluster = MongoClient(MONGO_DB)
 db = cluster["wsb_momentum"]
 collection = db["daily_mentions"]
@@ -25,7 +30,9 @@ subreddit = 'wallstreetbets'
 todays_date = moment.now().format("YYYY-MM-DD")
 todays_data = collection.find_one({"date": todays_date})
 now = round(time.time())
+twenty_minutes_ago = 1620430200
 twenty_minutes_ago = todays_data['last_post'] + 1 if todays_data else now - 1200
+ten_minutes_ago = 1620432520 - 600
 ten_minutes_ago = now - 600
 
 def extract_ticker(body, start_index):
@@ -6703,6 +6710,8 @@ def make_request(uri, max_retries = 5):
          current_tries += 1
    return fire_away(uri)
 
+
+
 def pull_comments_for(subreddit, start_at, end_at):
    def map_comments(comments):
       return list(map(lambda comment: {
@@ -6712,23 +6721,55 @@ def pull_comments_for(subreddit, start_at, end_at):
       }, comments))  
    SIZE = 250
    URI_TEMPLATE = r'https://beta.pushshift.io/search/reddit/comments?subreddit={}&min_created_utc={}&max_created_utc={}&min_score=1&size={}&sort=asc'
-
+   comments_collections = None
    comments_collections = map_comments( \
       make_request( \
          URI_TEMPLATE.format( \
                subreddit, start_at, end_at, SIZE))['data'])
    n = len(comments_collections)
-   while n == SIZE:
-      last = comments_collections[-1]
-      new_start_at = last['created_utc'] + (1)
-      more_comments = map_comments( \
-         make_request( \
-               URI_TEMPLATE.format( \
-               subreddit, new_start_at, end_at, SIZE))['data'])
-      n = len(more_comments)
-      comments_collections.extend(more_comments)
+   if (n == 0):
+      comments_collections = pull_comments_the_dumb_way(subreddit, start_at, end_at)
+   else:
+      while n == SIZE:
+         last = comments_collections[-1]
+         new_start_at = last['created_utc'] + (1)
+         more_comments = map_comments( \
+            make_request( \
+                  URI_TEMPLATE.format( \
+                  subreddit, new_start_at, end_at, SIZE))['data'])
+         n = len(more_comments)
+         comments_collections.extend(more_comments)
+
    return comments_collections
 
+def pull_comments_the_dumb_way(subreddit, start_at, end_at):
+   reddit = praw.Reddit(
+      client_id=CLIENT_ID,
+      client_secret=CLIENT_SECRET,
+      user_agent=USER_AGENT
+   )
+   comments_from_reddit = reddit.subreddit('wallstreetbets').comments(limit=1000)
+   ticker_dict = {}
+   comments_within_timeframe = []
+
+   for count, comment in enumerate(comments_from_reddit):
+      try:
+         if isinstance(comment, MoreComments):
+            continue
+         if comment.score > 0 and comment.created_utc <= ten_minutes_ago and comment.created_utc >= twenty_minutes_ago:
+            comments_within_timeframe.append({'id': comment.id, 'body': comment.body, 'created_utc': comment.created_utc})
+         if comment.score > 0 and comment.created_utc <= ten_minutes_ago:   
+            comment.refresh()
+            replies = comment.replies
+            for rep in replies:
+               if isinstance(rep, MoreComments):
+                  continue
+               if rep.score > 0 and rep.created_utc <= ten_minutes_ago and rep.created_utc >= twenty_minutes_ago:
+                  comments_within_timeframe.append({'id': rep.id, 'body': rep.body, 'created_utc': rep.created_utc})
+      except:
+         continue
+
+   return comments_within_timeframe
 
 
 comments = pull_comments_for(subreddit, twenty_minutes_ago, ten_minutes_ago)
@@ -6747,6 +6788,7 @@ def run():
       except:
          continue
    number_of_comments = count
+   
 
    total_mentions = 0
    ticker_list = []
@@ -6755,7 +6797,6 @@ def run():
       ticker_list.append(ticker_dict[key])
 
    ticker_list = sorted(ticker_list, key=operator.attrgetter("count"), reverse=True)
-
    for ticker in ticker_list:
       Ticker.analyze_sentiment(ticker)
 
