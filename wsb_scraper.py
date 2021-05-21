@@ -6708,6 +6708,21 @@ def make_request(uri, max_retries = 5):
          current_tries += 1
    return fire_away(uri)
 
+# def remove_shitty_comments(comments):
+#    reddit = praw.Reddit(
+#       client_id=CLIENT_ID,
+#       client_secret=CLIENT_SECRET,
+#       user_agent=USER_AGENT
+#    )
+#    ids = ["t1_" + x["id"] for x in comments]
+#    no_shitty_comments = None
+#    for comment in reddit.info(ids):
+#       if comment["score"] > 0:
+#          no_shitty_comments.append(comment)
+
+#    return no_shitty_comments
+
+
 def pull_comments_for(subreddit, start_at, end_at):
    def map_comments(comments):
       return list(map(lambda comment: {
@@ -6739,9 +6754,11 @@ def pull_comments_for(subreddit, start_at, end_at):
    except:
       comments_collections = pull_comments_the_dumb_way(subreddit, start_at, end_at)
 
+   # no_shitty_comments = remove_shitty_comments(comments_collections)
    return comments_collections
 
 def pull_comments_the_dumb_way(subreddit, start_at, end_at):
+   print('using praw')
    reddit = praw.Reddit(
       client_id=CLIENT_ID,
       client_secret=CLIENT_SECRET,
