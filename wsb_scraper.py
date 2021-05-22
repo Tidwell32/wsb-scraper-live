@@ -27,12 +27,6 @@ cluster = MongoClient(MONGO_DB)
 db = cluster["wsb_momentum"]
 collection = db["daily_mentions"]
 subreddit = 'wallstreetbets'
-local = arrow.now('US/Central')
-todays_date = local.format("YYYY-MM-DD")
-todays_data = collection.find_one({"date": todays_date})
-now = round(time.time())
-twenty_minutes_ago = todays_data['last_post'] + 1 if todays_data else now - 1200
-ten_minutes_ago = now - 600
 
 def extract_ticker(body, start_index):
    """
@@ -6709,57 +6703,7 @@ def make_request(uri, max_retries = 5):
          current_tries += 1
    return fire_away(uri)
 
-# def remove_shitty_comments(comments):
-#    reddit = praw.Reddit(
-#       client_id=CLIENT_ID,
-#       client_secret=CLIENT_SECRET,
-#       user_agent=USER_AGENT
-#    )
-#    ids = ["t1_" + x["id"] for x in comments]
-#    no_shitty_comments = None
-#    for comment in reddit.info(ids):
-#       if comment["score"] > 0:
-#          no_shitty_comments.append(comment)
-
-#    return no_shitty_comments
-
-
-def pull_comments_for(subreddit, start_at, end_at):
-   def map_comments(comments):
-      return list(map(lambda comment: {
-         'id': comment['id'],
-         'body': comment['body'],
-         'created_utc': comment['created_utc'],
-      }, comments))  
-   try:
-      SIZE = 250
-      URI_TEMPLATE = r'https://beta.pushshift.io/search/reddit/comments?subreddit={}&min_created_utc={}&max_created_utc={}&min_score=1&size={}&sort=asc'
-      comments_collections = None
-      comments_collections = map_comments( \
-         make_request( \
-            URI_TEMPLATE.format( \
-                  subreddit, start_at, end_at, SIZE))['data'])
-      n = len(comments_collections)
-      print(n)
-      if n == 0:
-         comments_collections = pull_comments_the_dumb_way(subreddit, start_at, end_at)
-      else:
-         while n == SIZE:
-            last = comments_collections[-1]
-            new_start_at = last['created_utc'] + (1)
-            more_comments = map_comments( \
-               make_request( \
-                     URI_TEMPLATE.format( \
-                     subreddit, new_start_at, end_at, SIZE))['data'])
-            n = len(more_comments)
-            comments_collections.extend(more_comments)
-   except:
-      comments_collections = pull_comments_the_dumb_way(subreddit, start_at, end_at)
-
-   # no_shitty_comments = remove_shitty_comments(comments_collections)
-   return comments_collections
-
-def pull_comments_the_dumb_way(subreddit, start_at, end_at):
+def pull_comments_for(subreddit, last_post):
    print('using praw')
    reddit = praw.Reddit(
       client_id=CLIENT_ID,
@@ -6774,15 +6718,15 @@ def pull_comments_the_dumb_way(subreddit, start_at, end_at):
       try:
          if isinstance(comment, MoreComments):
             continue
-         if comment.score > 0 and comment.created_utc <= end_at and comment.created_utc >= start_at:
+         if comment.score > 0 and comment.created_utc >= last_post:
             comments_within_timeframe.append({'id': comment.id, 'body': comment.body, 'created_utc': comment.created_utc})
-         if comment.score > 0 and comment.created_utc <= end_at:   
+         if comment.score > 0 and comment.created_utc >= last_post:   
             comment.refresh()
             replies = comment.replies
             for rep in replies:
                if isinstance(rep, MoreComments):
                   continue
-               if rep.score > 0 and rep.created_utc <= end_at and rep.created_utc >= start_at:
+               if rep.score > 0 and rep.created_utc >= last_post:
                   comments_within_timeframe.append({'id': rep.id, 'body': rep.body, 'created_utc': rep.created_utc})
       except:
          continue
@@ -6790,11 +6734,16 @@ def pull_comments_the_dumb_way(subreddit, start_at, end_at):
    comments_within_timeframe.reverse()
    return comments_within_timeframe
 
-
-comments = pull_comments_for(subreddit, twenty_minutes_ago, ten_minutes_ago)
-comments_from_reddit = comments
-number_of_comments = 0
 def run():
+   local = arrow.now('US/Central')
+   todays_date = local.format("YYYY-MM-DD")
+   todays_data = collection.find_one({"date": todays_date})
+   now = round(time.time())
+   last_post_parsed = todays_data['last_post'] + 1 if todays_data else now - 300
+   comments = pull_comments_for(subreddit, last_post_parsed)
+   comments_from_reddit = comments
+   number_of_comments = 0
+
    data_for_db = []
    ticker_dict = {}
    new_comments = comments_from_reddit
@@ -6873,4 +6822,7 @@ class Ticker:
          self.bearish = int(self.neg_count / len(self.bodies) * 100)
          self.neutral = int(neutral_count / len(self.bodies) * 100)
 
-run()
+while True:
+   run()
+   print('sleeping')
+   time.sleep(300)
