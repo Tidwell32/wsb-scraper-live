@@ -6740,6 +6740,7 @@ def pull_comments_for(subreddit, start_at, end_at):
             URI_TEMPLATE.format( \
                   subreddit, start_at, end_at, SIZE))['data'])
       n = len(comments_collections)
+      print(n)
       if n == 0:
          comments_collections = pull_comments_the_dumb_way(subreddit, start_at, end_at)
       else:
@@ -6799,6 +6800,8 @@ def run():
    new_comments = comments_from_reddit
    first_post = comments_from_reddit[0]['created_utc']
    last_post = comments_from_reddit[-1]['created_utc']
+   print(first_post)
+   print(last_post)
 
    for count, comment in enumerate(new_comments):
       try:
