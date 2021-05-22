@@ -1,6 +1,6 @@
 import re
 import sys
-import moment
+import arrow
 import time
 import json
 import pprint
@@ -22,11 +22,11 @@ MONGO_DB = environ['MONGO_DB']
 cluster = MongoClient(MONGO_DB)
 db = cluster["wsb_momentum"]
 collection = db["daily_mentions"]
-dt = datetime.combine(date.today(), dtime(0, 0, 0))
-yesterday_unix = int((dt - timedelta(hours=12)).timestamp())
-yesterday_date = moment.unix(yesterday_unix).format('YYYY-MM-DD')
+local = arrow.now('US/Central')
+yesterday = local.shift(days=-1)
+yesterday_date = yesterday.format('YYYY-MM-DD')
 yesterday_data = collection.find_one({"date": yesterday_date})
-
+dt = datetime.combine(date.today(), dtime(0, 0, 0))
 start_at = int((dt - timedelta(days=1)).timestamp())
 end_at = start_at + 86399
 subreddit = 'wallstreetbets'

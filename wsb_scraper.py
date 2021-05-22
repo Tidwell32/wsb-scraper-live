@@ -1,6 +1,6 @@
 import re
 import sys
-import moment
+import arrow
 import praw
 from praw.models import MoreComments
 import time
@@ -27,7 +27,8 @@ cluster = MongoClient(MONGO_DB)
 db = cluster["wsb_momentum"]
 collection = db["daily_mentions"]
 subreddit = 'wallstreetbets'
-todays_date = moment.now().format("YYYY-MM-DD")
+local = arrow.now('US/Central')
+todays_date = local.format("YYYY-MM-DD")
 todays_data = collection.find_one({"date": todays_date})
 now = round(time.time())
 twenty_minutes_ago = todays_data['last_post'] + 1 if todays_data else now - 1200
